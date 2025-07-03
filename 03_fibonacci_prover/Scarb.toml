@@ -1,0 +1,20 @@
+[package]
+name = "fibonacci_prover"
+version = "0.1.0"
+edition = "2023_11"
+
+
+[dependencies]
+core = ">=2.0.0"
+cairo_execute = "2.11.4"
+
+[cairo]
+enable-gas = false
+
+[dev-dependencies]
+cairo_test = "2.11.4"
+
+[[target.executable]]
+name = "fibonacci_prover_main"
+function = "fibonacci_prover::main"
+
