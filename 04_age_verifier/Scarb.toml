@@ -1,0 +1,36 @@
+[package]
+name = "age_verifier"
+version = "0.1.0"
+edition = "2023_10"
+
+[dependencies]
+starknet = "2.6.3"
+core = ">=2.0.0"
+cairo_execute = "2.11.4"
+
+[cairo]
+enable-gas = true
+
+[dev-dependencies]
+cairo_test = "2.11.4"
+snforge_std = "0.45.0"
+assert_macros = "2.11.4"
+
+[[target.starknet-contract]]
+sierra = true
+casm = true
+
+
+[scripts]
+test = "snforge test"
+
+[tool.scarb]
+allow-prebuilt-plugins = ["snforge_std"]
+
+
+# [[target.executable]]
+# name = "age_verifier_main"
+# function = "age_verifier::main"
+
+
+
