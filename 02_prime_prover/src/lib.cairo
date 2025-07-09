@@ -8,7 +8,7 @@
 ///
 /// * `true` if the number is prime
 /// * `false` if the number is not prime
-fn is_prime(n: u128) -> bool {
+pub fn is_prime(n: u128) -> bool {
     if n <= 1 {
         return false;
     }

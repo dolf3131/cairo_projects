@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2023_10"
 
 [dependencies]
-starknet = "2.6.3"
+starknet = "2.11.4"
+
 core = ">=2.0.0"
 cairo_execute = "2.11.4"
 
@@ -13,7 +14,7 @@ enable-gas = true
 
 [dev-dependencies]
 cairo_test = "2.11.4"
-snforge_std = "0.45.0"
+snforge_std = "0.43.1"
 assert_macros = "2.11.4"
 
 [[target.starknet-contract]]

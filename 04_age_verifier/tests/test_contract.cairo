@@ -1,44 +1,63 @@
 #[cfg(test)]
 mod tests {
-    use age_verifier::IAgeVerifierDispatcher;
-    use age_verifier::IAgeVerifierDispatcherTrait;
-    use starknet::{ContractAddress, Felt252TryIntoContractAddress};
-    use starknet::TryInto;
+    use age_verifier::{IAgeVerifier, IAgeVerifierDispatcher, IAgeVerifierDispatcherTrait};
     use snforge_std::{declare, ContractClassTrait, DeclareResultTrait};
+    use starknet::SyscallResultTrait;
     use core::array::ArrayTrait;
     use core::traits::Into;
-    use core::result::ResultTrait;
-    use core::option::OptionTrait;
+    use core::poseidon::poseidon_hash_span;
 
-    const THRESHOLD_YEAR: u32 = 2005;
+    const MIN_AGE: u32 = 20;
 
-    fn setup() -> IAgeVerifierDispatcher {
-        let class = declare("AgeVerifier").unwrap().contract_class();
-        
-        let owner: ContractAddress = 0_felt252.try_into().unwrap();
-        let mut constructor_args = array![owner.into(), THRESHOLD_YEAR.into()];
+    fn calculate_commitment(age: felt252, nonce: felt252) -> felt252 {
+        let mut inputs = ArrayTrait::new();
+        inputs.append(age);
+        inputs.append(nonce);
+        core::poseidon::poseidon_hash_span(inputs.span())
+    }
 
-        let (contract_address, _) = class.deploy(@constructor_args).unwrap();
-        
-        IAgeVerifierDispatcher { contract_address }
+    fn setup() -> starknet::ContractAddress {
+        let contract_class = declare("AgeVerifier").unwrap().contract_class();
+        let (contract_address, _) = contract_class.deploy(@array![]).unwrap_syscall();
+        contract_address
     }
 
     #[test]
-    fn test_verification_success() {
-        let dispatcher = setup();
-        dispatcher.verify_age(2000);
+    fn test_age_verification_pass() {
+        let contract_address = setup();
+        let user_age: felt252 = 25;
+        let nonce: felt252 = 12345;
+        let commitment = calculate_commitment(user_age, nonce);
+        IAgeVerifierDispatcher { contract_address }.verify_age(commitment, MIN_AGE, user_age, nonce);
     }
 
     #[should_panic(expected: ('Underage',))]
     #[test]
-    fn test_verification_fail() {
-        let dispatcher = setup();
-        dispatcher.verify_age(2010);
+    fn test_age_verification_fail_underage() {
+        let contract_address = setup();
+        let user_age: felt252 = 18;
+        let nonce: felt252 = 67890;
+        let commitment = calculate_commitment(user_age, nonce);
+        IAgeVerifierDispatcher { contract_address }.verify_age(commitment, MIN_AGE, user_age, nonce);
+    }
+
+    #[should_panic(expected: ('Invalid commitment',))]
+    #[test]
+    fn test_age_verification_fail_invalid_commitment() {
+        let contract_address = setup();
+        let user_age: felt252 = 25;
+        let nonce: felt252 = 12345;
+        let wrong_nonce: felt252 = 54321;
+        let commitment = calculate_commitment(user_age, wrong_nonce); // Calculate with wrong nonce
+        IAgeVerifierDispatcher { contract_address }.verify_age(commitment, MIN_AGE, user_age, nonce);
     }
 
     #[test]
-    fn test_verification_edge_case() {
-        let dispatcher = setup();
-        dispatcher.verify_age(2005);
+    fn test_age_verification_edge_case_min_age() {
+        let contract_address = setup();
+        let user_age: felt252 = 20;
+        let nonce: felt252 = 98765;
+        let commitment = calculate_commitment(user_age, nonce);
+        IAgeVerifierDispatcher { contract_address }.verify_age(commitment, MIN_AGE, user_age, nonce);
     }
 }
