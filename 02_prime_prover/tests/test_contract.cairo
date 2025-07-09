@@ -1,8 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::is_prime;
-
-    #[test]
+    use prime_prover::is_prime;
     fn test_prime() {
         assert(is_prime(2), '2 should be prime');
         assert(is_prime(3), '3 should be prime');
